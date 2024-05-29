@@ -12,14 +12,14 @@ Explanation: The subarray [4,-1,2,1] has the largest sum 6.
 
 """
 
-def kadane(lst):
-    maxSum = lst[0]
+def kadanes(arr):
+    maxSum = arr[0]
     curSum = 0
-    for n in lst:
-        # Here we check if the current sum is negative, if so we reset it to 0 then add the next num
-        curSum = max(curSum, 0) + n
+    for n in arr:
+        curSum = max(curSum, 0)
+        curSum += n
         maxSum = max(maxSum, curSum)
     return maxSum
 
 lst = [4,-1,2,-7,3,4]
-print(kadane(lst))
+print(kadanes(lst))
