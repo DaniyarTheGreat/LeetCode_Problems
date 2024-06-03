@@ -1,140 +1,118 @@
-class TreeNode:
-    def __init__(self, val):
-        self.val = val
-        self.right = None
-        self.left = None
-
-def insert(root, val):
-    if not root:
-        return TreeNode(val)
+class Heap:
+    def __init__(self) -> None:
+        self.heap = [0]
     
-    if root.val > val:
-        root.left = insert(root.left, val)
-    elif root.val < val:
-        root.right = insert(root.right, val)
-    return root
+    def push(self, val):
+        self.heap.append(val)
+        i = len(self.heap) - 1
+        self.bubble_up(i)
 
-def minValue(root):
-    curr = root
-    while curr and curr.left:
-        curr = curr.left
-    return curr
+    def remove(self):
+        if (len(self.heap)) <= 1:
+            return
+        if len(self.heap) == 2:
+            return self.heap.pop()
+        
+        res = self.heap[1]
+        self.heap[1] = self.heap.pop()
 
-def remove(root, target):
-    if not root:
+        self.bubble_down(1)
+        return res
+
+    def bubble_down(self, i):
+        while i*2 < len(self.heap):
+            if i * 2 + 1 < len(self.heap) and self.heap[i*2+1] < self.heap[i*2] and self.heap[i] > self.heap[i*2+1]:
+                temp = self.heap[i*2+1]
+                self.heap[i*2+1] = self.heap[i]
+                self.heap[i] = temp
+                i = i * 2 + 1
+            elif self.heap[i] > self.heap[i*2]:
+                temp = self.heap[i*2]
+                self.heap[i*2] = self.heap[i]
+                self.heap[i] = temp
+                i = i * 2
+            else:
+                break
+
+    def bubble_up(self, i):
+        while i >= 1 and self.heap[i] < self.heap[i//2]:
+            temp = self.heap[i]
+            self.heap[i] = self.heap[i//2]
+            self.heap[i//2] = temp
+            i = i // 2
+
+    def heapify(self, nums : list):
+        nums.append(nums[0])
+        self.heap = nums
+        curr = ((len(self.heap)) - 1) // 2
+        while curr > 0:
+            i = curr
+            self.bubble_down(i)
+            curr -= 1
+
+class Pair:
+    def __init__(self, key, val) -> None:
+        self.val = val
+        self.key = key
+
+class Hash:
+    def __init__(self):
+        self.size = 0
+        self.capacity = 2
+        self.hash = [None, None]
+
+    def hash(self, key):
+        index = 0
+        for c in key:
+            index += ord(c)
+        return index % self.capacity
+    
+    def put(self, key, val):
+        index = self.hash(key)
+
+        while True:
+            if self.hash[index] == None:
+                self.hash[index] = Pair(key, val)
+                self.size += 1
+                if self.size >= self.capacity // 2:
+                    self.rehash()
+                return
+            elif self.hash[index].key == key:
+                self.hash[index].val = val
+                return
+            index += 1
+            index = index % self.capacity
+            
+    def get(self,key):
+        index = self.hash(key)
+        while self.hash[index] != None:
+            if self.hash[index].key == key:
+                return self.hash[index].val
+            index += 1
+            index %= self.capacity
         return None
     
-    if target > root.val:
-        root.right = remove(root.right, target)
-    elif target < root.val:
-        root.left = remove(root.left, target)
-    else:
-        if not root.right:
-            return root.left
-        elif not root.left:
-            return root.right
-        else:
-            minVal = minValue(root.right)
-            root.val = minVal.val
-            root.right = remove(root.right, minVal)
-    return root
+    def remove(self, key):
+        if not self.get(key): 
+            return
+        
+        index = self.hash(key)
+        while True:
+            if self.hash[index] == key:
+                self.hash[index] = None
+                self.size -= 1
+                return
+            index += 1
+            index = index % self.capacity
+        
+    def rehash(self):
+        self.capacity *= 2
+        old_map = self.hash
+        new_map = [None] * self.capacity
+        self.hash = new_map
+        self.size = 0
+        for pair in old_map:
+            if pair:
+                self.put(pair.key, pair.val)
 
-def BST(arr, target):
-    L, R = 0, len(target) - 1
-
-    while L <= R:
-        mid = (L+R) // 2
-        if target > arr[mid]:
-            L = mid + 1
-        elif target < arr[mid]:
-            R = mid -1
-        else:
-            return mid
-    return -1
-
-def bucketSort(arr):
-    counts = [0] * len(arr)
-
-    for n in arr:
-        counts[n] += 1
     
-    l = 0
-    for i in range(len(counts)):
-        for j in range(counts[i]):
-            arr[l] = i
-            l += 1
-
-def quickSort(arr, s, e):
-    if e - s + 1 <= 1:
-        return arr
-    
-    pivot = arr[e]
-    left = s
-    
-    for i in range(s, e):
-        if arr[i] < pivot:
-            temp = arr[left]
-            arr[left], arr[i] = arr[i], temp
-            left += 1
-    
-    arr[e] = arr[left]
-    arr[left] = pivot
-
-    quickSort(arr, s, left - 1)
-    quickSort(arr, left + 1, e)
-
-def mergeSort(arr, s, e):
-    if e - s + 1 <= 1:
-        return arr
-    
-    m = (s + e) // 2
-
-    mergeSort(arr, s, m)
-    mergeSort(arr, m+1, e)
-    merge(arr,s, m, e)
-
-
-def merge(arr, s, m, e):
-    L = arr[s: m+1]
-    R = arr[m+1: e+1]
-
-    i,j,k = 0,0,s
-
-    while i < len(L) and j < len(R):
-        if L[i] <= R[j]:
-            arr[k] = L[i]
-            i += 1
-        else:
-            arr[k] = R[j]
-            j += 1
-        k += 1
-
-    while i < len(L):
-        arr[k] = L[i]
-        i += 1
-        k += 1
-
-    while j < len(R):
-        arr[k] = R[j]
-        j += 1
-        k += 1
-
-def insertionSort(arr):
-    for i in range(1, len(arr)):
-        j = i - 1
-        while j >= 0 and arr[j+1] < arr[j]:
-            temp = arr[j]
-            arr[j] = arr[j+1]
-            arr[j+1] = temp
-            j -= 1
-    return arr
-    
-def kadanes(arr):
-    maxSub = arr[0]
-    currSub = 0
-
-    for n in arr:
-        currSub = max(currSub, 0)
-        currSub += n
-        maxSub = max(maxSub, currSub)
-    return maxSub
