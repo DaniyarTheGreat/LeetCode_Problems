@@ -39,12 +39,39 @@ class Node:
         self.left = None
 
 def bfs(node: Node, target: int, k: int):
-    count = 1
+    adj_lst = {}
+    graph_traversal(node, adj_lst, None)
 
 
-def postorder(root: Node, res: list, count: int):
-    if not root:
-        return    
-    postorder(root.left)
-    postorder(root.right)
-    print(root.val)
+
+def graph_traversal(node: Node, adj_lst, parent=None):
+    if not node:
+        return
+    
+    adj_lst[node] = []
+    if parent:
+        adj_lst[node.val].append(parent.val)
+    if node.left:
+        adj_lst[node.val].append(node.left.val)
+    if node.right:
+        adj_lst[node.val].append(node.right.val)
+    
+    graph_traversal(node.left, adj_lst, node)
+    graph_traversal(node.right, adj_lst, node)
+
+
+def k_distance(target, k, adj_lst):
+    queue = deque
+    visit = set()
+    queue.append(target)
+    visit.add(target)
+    while queue and k > 0:
+        for i in range(len(queue)):
+            curr = queue.popleft()
+            for nei in adj_lst[curr]:
+                if nei not in visit and nei != target:
+                    queue.append(nei)
+                    visit.add(nei)
+        k-=1
+    return [queue.popleft() for n in queue]
+
